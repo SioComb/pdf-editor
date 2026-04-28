@@ -1,11 +1,25 @@
 """PDF splitting module using pypdf."""
 
 from pathlib import Path
+from threading import Event
 
 from pypdf import PdfReader, PdfWriter
 
+from src.output_paths import unique_path
 
-def split_pdf(pdf_path: str, output_dir: str) -> list[str]:
+
+def _raise_if_cancelled(cancel_event: Event | None) -> None:
+    if cancel_event and cancel_event.is_set():
+        raise InterruptedError("Operation cancelled")
+
+
+def split_pdf(
+    pdf_path: str,
+    output_dir: str,
+    *,
+    auto_rename: bool = True,
+    cancel_event: Event | None = None,
+) -> list[str]:
     """Split a PDF into individual single-page files.
 
     Args:
@@ -23,9 +37,12 @@ def split_pdf(pdf_path: str, output_dir: str) -> list[str]:
     output_files: list[str] = []
 
     for page_num in range(len(reader.pages)):
+        _raise_if_cancelled(cancel_event)
         writer = PdfWriter()
         writer.add_page(reader.pages[page_num])
         out_file = output_dir / f"{pdf_path.stem}_page_{page_num + 1:03d}.pdf"
+        if auto_rename:
+            out_file = unique_path(out_file)
         with open(out_file, "wb") as f:
             writer.write(f)
         output_files.append(str(out_file))
@@ -69,7 +86,14 @@ def _parse_ranges(range_str: str, total_pages: int) -> list[list[int]]:
     return groups
 
 
-def split_by_range(pdf_path: str, output_dir: str, range_str: str) -> list[str]:
+def split_by_range(
+    pdf_path: str,
+    output_dir: str,
+    range_str: str,
+    *,
+    auto_rename: bool = True,
+    cancel_event: Event | None = None,
+) -> list[str]:
     """Split a PDF according to page-range specifications.
 
     Each range group produces one output PDF containing only those pages.
@@ -92,11 +116,15 @@ def split_by_range(pdf_path: str, output_dir: str, range_str: str) -> list[str]:
     output_files: list[str] = []
 
     for group_idx, pages in enumerate(groups):
+        _raise_if_cancelled(cancel_event)
         writer = PdfWriter()
         for page_num in pages:
+            _raise_if_cancelled(cancel_event)
             writer.add_page(reader.pages[page_num - 1])
         label = f"{pages[0]}-{pages[-1]}" if len(pages) > 1 else str(pages[0])
         out_file = output_dir / f"{pdf_path.stem}_range_{group_idx + 1:03d}_p{label}.pdf"
+        if auto_rename:
+            out_file = unique_path(out_file)
         with open(out_file, "wb") as f:
             writer.write(f)
         output_files.append(str(out_file))
