@@ -1,11 +1,64 @@
 [project]
 name = "pdf-editor"
 version = "0.1.0"
-description = "Add your description here"
+description = "PDF editor app built with Flet"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 dependencies = [
+    "flet[all]>=0.85.1",
     "msgpack>=1.1.2",
+    "pymupdf>=1.27.2.3",
     "pypdf>=6.10.2",
     "repath>=0.9.0",
 ]
+
+authors = [
+    { name = "SioComb", email = ""}
+]
+
+license = { file = "LICENSE" }
+keywords = ["pdf", "flet", "editor"]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Repository = "https://github.com/SioComb/pdf-editor"
+Issues = "https://github.com/SioComb/pdf-editor/issues"
+
+[tool.flet]
+product = "PDF-Editor"
+company = ""
+copyright = "Copyright (C) 2026 by SioComb"
+
+[tool.ruff]
+line-length = 80
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = ["W292"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.13",
+    "black>=24.1.0",
+    "mypy>=1.9.0",
+    "pytest>=7.0",
+]
+docs = [
+    "mkdocs>=1.5",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.gui-scripts]
+pdf-editor = "gui.main:main"

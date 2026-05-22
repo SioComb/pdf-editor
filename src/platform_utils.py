@@ -7,7 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-
+# フォルダを開く
 def open_folder(path: str | Path) -> None:
     """Open a folder with the platform's default file manager."""
     folder = str(Path(path))
@@ -15,6 +15,6 @@ def open_folder(path: str | Path) -> None:
         os.startfile(folder)  # type: ignore[attr-defined]
         return
     if sys.platform == "darwin":
-        subprocess.Popen(["open", folder])
+        subprocess.Popen(["open", folder]) # 機能していない？
         return
     subprocess.Popen(["xdg-open", folder])
