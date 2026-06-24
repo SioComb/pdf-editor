@@ -1,7 +1,7 @@
 import flet as ft
 
-from gui.main import main
+from src.gui.app import main as gui_main
 
 
 if __name__ == "__main__":
-    ft.app(target=main)
+    ft.run(gui_main)

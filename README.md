@@ -1,81 +1,116 @@
 # pdf-editor
 
-PDF ファイルを JPEG / PNG 画像に変換したり、PDF を分割・結合できる GUI アプリケーションです。
+PDF を JPEG / PNG 画像へ変換し、PDF の分割・結合も行える Flet 製 GUI
+アプリケーションです。
 
----
+## 必要環境
 
-## フォルダ構成
+- Python 3.12
+- [uv](https://docs.astral.sh/uv/)
 
-```
-pdf-editor/
-├── gui/
-│   ├── main.py          # GUI エントリーポイント (Flet)
-│   └── assets/          # アイコン・画像ファイル格納フォルダ
-├── src/
-│   ├── __init__.py
-│   ├── pdf_to_img.py    # PDF → JPEG / PNG 変換
-│   ├── pdf_split.py     # PDF 分割
-│   └── pdf_merge.py     # PDF 結合
-├── input/               # 入力ファイル置き場
-├── output/              # 出力ファイル置き場
-├── requirements.txt
-└── README.md
-```
-
----
+依存関係の正本は `pyproject.toml`、再現可能な解決結果は `uv.lock` です。
+重複管理を避けるため、旧 `requirements.txt` は削除しました。
 
 ## セットアップ
 
-### 必要環境
-- Python 3.10 以上
+リポジトリのルートで次を実行します。
 
-### 依存パッケージのインストール
-
-```bash
-pip install -r requirements.txt
+```powershell
+uv sync
 ```
 
----
+## 起動
 
-## 起動方法
+正式な開発時の起動コマンドは次のとおりです。
 
-```bash
-python gui/main.py
+```powershell
+uv run python main.py
 ```
 
----
+ルートの `main.py` は Flet を起動し、`src.gui.app` の GUI
+エントリーポイントを呼び出すだけの薄い起動ファイルです。
+
+Flet CLI のリロード機能を使う場合は、次のコマンドでも起動できます。
+
+```powershell
+uv run flet run main.py
+```
+
+## Windows ビルド
+
+```powershell
+uv run flet build windows
+```
+
+生成物は `build/windows/` に出力されます。Flet 0.85.1 は
+`assets/icon.png` をビルド用アイコンとして自動検出します。
+`assets/app.ico` は既存の Windows 用 ICO 素材です。
+
+## プロジェクト構成
+
+```text
+pdf-editor/
+├── main.py                  # 正式な起動ファイル
+├── pyproject.toml           # プロジェクト設定・依存関係の正本
+├── uv.lock                  # 固定済み依存関係
+├── README.md
+├── assets/
+│   ├── app.ico              # Windows 用 ICO 素材
+│   └── icon.png             # Flet ビルド用アプリアイコン
+├── input/                   # 既定の入力場所
+├── output/                  # 既定の出力場所
+├── src/
+│   ├── __init__.py
+│   ├── gui/
+│   │   ├── __init__.py
+│   │   ├── app.py           # 現在の Flet GUI 実装
+│   │   └── assets/          # GUI 内部専用素材（現在は空）
+│   ├── output_paths.py
+│   ├── pdf_merge.py
+│   ├── pdf_split.py
+│   ├── pdf_to_img.py
+│   └── platform_utils.py
+└── tests/
+```
+
+既定の `input/` と `output/` は、カレントディレクトリではなくソースの
+配置場所を基準に解決されます。そのため、別のディレクトリから
+`main.py` を指定して起動しても同じ場所を参照します。ユーザーが GUI
+で選んだ出力先と既存の SharedPreferences キーは変更していません。
 
 ## 機能
 
-### 1. PDF → 画像 タブ
-- **ファイル** モード: 単一の PDF ファイルを選択して変換
-- **フォルダ** モード: 指定フォルダ内の全 PDF を一括変換
-- 出力フォーマット: **JPEG** / **PNG**
-- 解像度: 72 / 150 / 300 DPI
-- 変換結果は `output/` フォルダに保存されます
+### PDF → 画像
 
-### 2. PDF 分割 タブ
-- **全ページ**: 1 ページごとに個別 PDF として分割
-- **ページ範囲指定**: `1-3, 5, 7-9` のようにカンマ区切りで範囲を指定
-- 分割結果は `output/` フォルダに保存されます
+- 単一 PDF または指定フォルダ内の PDF を JPEG / PNG に変換
+- 解像度を選択可能
 
-### 3. PDF 結合 タブ
-- **ファイル選択**: 複数の PDF を個別に追加して順番通りに結合
-- **フォルダ内すべて**: 指定フォルダ内の全 PDF をファイル名順に結合
-- 出力ファイル名を指定可能（デフォルト: `merged.pdf`）
-- 結合結果は `output/` フォルダに保存されます
+### PDF 分割
 
----
+- 全ページを 1 ページずつ分割
+- `1-3, 5, 7-9` 形式でページ範囲を指定して分割
 
-## 依存ライブラリ
+### PDF 結合
 
-| パッケージ  | 用途 |
-|------------|------|
-| [flet](https://flet.dev/) | GUI フレームワーク |
-| [pymupdf](https://pymupdf.readthedocs.io/) | PDF → 画像変換 |
-| [pypdf](https://pypdf.readthedocs.io/) | PDF 分割・結合 |
+- 選択した複数 PDF を指定順に結合
+- 指定フォルダ内の PDF をファイル名順に結合
 
----
+## assets の用途
+
+- ルート `assets/`: アプリ全体および Flet / Windows ビルドで使う素材
+- `src/gui/assets/`: GUI 画面内部だけで使う静的素材の配置先
+
+パスは `pathlib.Path` とモジュールの配置場所を基準に解決し、
+`Path.cwd()` には依存しません。
+
+## 既知の制約
+
+- GUI のクラス化は未実装です。
+- ドラッグ＆ドロップは未実装です。
+- レスポンシブなドロップ領域は未実装です。
+
+これらは次回以降の変更対象です。今回の構成整理では、既存 UI、イベント処理、
+SharedPreferences キー、PDF 処理関数の引数と戻り値を変更していません。
 
 ## ライセンス
 

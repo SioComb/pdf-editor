@@ -1,21 +1,17 @@
 # coding: utf-8
-# main.py - PDF Editor GUI
-# Python 3.12 / flet 0.84.0
+# app.py - PDF Editor GUI
+# Python 3.12 / Flet 0.85.1
 
 
 
 from __future__ import annotations
 
 import asyncio
-import sys
 from threading import Event
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Optional, cast
 
 import flet as ft
-
-# 作業ディレクトリに関係なくプロジェクトルートからのインポートを許可する
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.pdf_merge import merge_folder, merge_pdfs
 from src.pdf_split import split_by_range, split_pdf
@@ -24,7 +20,7 @@ from src.platform_utils import open_folder
 
 
 APP_NAME = "PDF Editor"
-BASE_DIR = Path(__file__).parent.parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 INPUT_DIR = BASE_DIR / "input"
 DEFAULT_OUTPUT_DIR = BASE_DIR / "output"
 
@@ -972,7 +968,3 @@ async def main(page: ft.Page) -> None:
             expand=True,
         )
     )
-
-
-if __name__ == "__main__":
-    ft.run(main)
